@@ -1,0 +1,325 @@
+----------------------------------------------------------------------------------
+-- Company: 
+-- Engineer: 
+-- 
+-- Create Date:    17:10:48 09/13/2017 
+-- Design Name: 
+-- Module Name:    Bcdcounter74192v5 - Behavioral 
+-- Project Name: 
+-- Target Devices: 
+-- Tool versions: 
+-- Description: 
+--
+-- Dependencies: 
+--
+-- Revision: 
+-- Revision 0.01 - File Created
+-- Additional Comments: 
+--
+----------------------------------------------------------------------------------
+library ieee; 
+use ieee.std_logic_1164.all;
+use ieee.std_logic_arith.all;
+use ieee.std_logic_unsigned.all;
+
+
+
+
+entity Bcdcounter74192v5 is
+port(ABCD: in std_logic_vector(3 downto 0); -- kolejno bity A B C D zapisane jako wektor
+	CLR, LOAD, UP, DOWN: in std_logic:='0'; -- kolejno reset, flaga do zaladowania liczby, zliczanie w gore, zliczanie w dol
+	--Oabcd:out std_logic_vector(3 downto 0); -- kolejno bity od A do D do wyswietlania wyniku, zapisane jako wektor. tutaj nie potrzebne
+	CO: out std_logic:='0'; -- wyjscie nadwyzka
+	BO: out std_logic:='0'; -- wyjscie pozyczka
+	-- wyjscie wysiwetlacza od 0 do 9
+	o0   : out  std_logic:='0'; 
+	o1   : out  std_logic:='0';
+	o2   : out  std_logic:='0'; 
+	o3   : out  std_logic:='0';
+	o4   : out  std_logic:='0';
+	o5   : out  std_logic:='0';
+	o6   : out  std_logic:='0';
+	o7   : out  std_logic:='0';
+	o8   : out  std_logic:='0';
+	o9   : out  std_logic:='0'); 
+end Bcdcounter74192v5;
+
+
+architecture Behavioral of Bcdcounter74192v5 is
+	signal tmpABCD: std_logic_vector(3 downto 0); -- pomocnicza od A do D, zapisana jako wektor
+	signal tmpCO: std_logic:='0'; -- pomocnicza do wyswietlenia nadwyzki
+	signal tmpBO: std_logic:='0'; -- pomocnicza do wyswietlenia pozyczki
+	begin
+	process(CLR, LOAD, UP, DOWN)
+	begin
+	
+	        --reset
+	        if(CLR = '1')then
+	            tmpABCD <= "0000"; --zapisz 0
+	        end if;
+	       
+	        --zapis liczby
+	        if(LOAD = '0' and CLR = '0')then
+	            if(ABCD = "1111" or ABCD = "1110" or ABCD = "1101" or ABCD = "1100" or ABCD = "1011" or ABCD = "1010") then --kiedy liczba wynosi 15,14,13,12,11,10 tzw. stany nie dozwolone
+	                tmpABCD <= "0000"; --zapisz 0
+	            else
+	                tmpABCD <= ABCD;
+	            end if;
+	        end if;
+	       
+	        --zliczanie w gore
+	        if(UP'event and UP = '1' and LOAD = '1' and CLR = '0' and DOWN = '1') then
+	            if(tmpABCD <= 8) then
+	                tmpCO <= '0';
+	            tmpABCD <= tmpABCD + 1;
+	           
+	            if(tmpABCD = 8) then
+	                tmpCO <= '1';
+	            end if;
+	            end if;
+	            if(tmpCO = '1') then
+	                tmpABCD <= "0000";
+	                tmpCo <= '0';
+	            end if;
+	 
+	        end if;
+	       
+	        --zliczanie w dol
+	        if(DOWN'event and DOWN = '1' and LOAD = '1' and CLR = '0' and UP = '1') then
+	            if(tmpABCD >= 1) then
+	                tmpBO <= '0';
+	            tmpABCD <= tmpABCD - 1;
+	           
+	            if(tmpABCD = 1) then
+	                tmpBO <= '1';
+	            end if;
+	            end if;
+	            if(tmpBO = '1') then
+	                tmpABCD <= "1001";
+	                tmpBO <= '0';
+	            end if;
+	        end if;
+
+	end process;
+	
+	-- zapis pomocniczych do wyjsc
+	--Oabcd <= tmpABCD; -- nie potrzebne
+	CO <= tmpCO;
+	BO <= tmpBO;
+	o0 <= '1' when (tmpABCD = "0000")
+			else '0';
+	o1 <= '1' when (tmpABCD = "0001")
+			else '0';
+	o2 <= '1' when (tmpABCD = "0010")
+			else '0';
+	o3 <= '1' when (tmpABCD = "0011")
+			else '0';
+	o4 <= '1' when (tmpABCD = "0100")
+			else '0';
+	o5 <= '1' when (tmpABCD = "0101")
+			else '0';
+	o6 <= '1' when (tmpABCD = "0110")
+			else '0';
+	o7 <= '1' when (tmpABCD = "0111")
+			else '0';
+	o8 <= '1' when (tmpABCD = "1000")
+			else '0';
+	o9 <= '1' when (tmpABCD = "1001")
+			else '0';
+end Behavioral;
+
+--test
+
+--------------------------------------------------------------------------------
+-- Company: 
+-- Engineer:
+--
+-- Create Date:   17:28:49 09/13/2017
+-- Design Name:   
+-- Module Name:   C:/WINDOWS/system32/projekt2/tb_Bcdcounter74192v5.vhd
+-- Project Name:  projekt2
+-- Target Device:  
+-- Tool versions:  
+-- Description:   
+-- 
+-- VHDL Test Bench Created by ISE for module: Bcdcounter74192v5
+-- 
+-- Dependencies:
+-- 
+-- Revision:
+-- Revision 0.01 - File Created
+-- Additional Comments:
+--
+-- Notes: 
+-- This testbench has been automatically generated using types std_logic and
+-- std_logic_vector for the ports of the unit under test.  Xilinx recommends
+-- that these types always be used for the top-level I/O of a design in order
+-- to guarantee that the testbench will bind correctly to the post-implementation 
+-- simulation model.
+--------------------------------------------------------------------------------
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
+ 
+-- Uncomment the following library declaration if using
+-- arithmetic functions with Signed or Unsigned values
+--USE ieee.numeric_std.ALL;
+ 
+ENTITY tb_Bcdcounter74192v5 IS
+END tb_Bcdcounter74192v5;
+ 
+ARCHITECTURE behavior OF tb_Bcdcounter74192v5 IS 
+ 
+    -- Component Declaration for the Unit Under Test (UUT)
+ 
+    COMPONENT Bcdcounter74192v5
+    PORT(
+         ABCD : IN  std_logic_vector(3 downto 0);
+         CLR : IN  std_logic;
+         LOAD : IN  std_logic;
+         UP : IN  std_logic;
+         DOWN : IN  std_logic;
+         CO : OUT  std_logic;
+         BO : OUT  std_logic;
+         o0 : OUT  std_logic;
+         o1 : OUT  std_logic;
+         o2 : OUT  std_logic;
+         o3 : OUT  std_logic;
+         o4 : OUT  std_logic;
+         o5 : OUT  std_logic;
+         o6 : OUT  std_logic;
+         o7 : OUT  std_logic;
+         o8 : OUT  std_logic;
+         o9 : OUT  std_logic
+        );
+    END COMPONENT;
+    
+
+   --Inputs
+   signal ABCD : std_logic_vector(3 downto 0) := (others => '0');
+   signal CLR : std_logic := '0';
+   signal LOAD : std_logic := '0';
+   signal UP : std_logic := '0';
+   signal DOWN : std_logic := '0';
+
+ 	--Outputs
+   signal CO : std_logic;
+   signal BO : std_logic;
+   signal o0 : std_logic;
+   signal o1 : std_logic;
+   signal o2 : std_logic;
+   signal o3 : std_logic;
+   signal o4 : std_logic;
+   signal o5 : std_logic;
+   signal o6 : std_logic;
+   signal o7 : std_logic;
+   signal o8 : std_logic;
+   signal o9 : std_logic;
+
+ 
+BEGIN
+ 
+	-- Instantiate the Unit Under Test (UUT)
+   uut: Bcdcounter74192v5 PORT MAP (
+          ABCD => ABCD,
+          CLR => CLR,
+          LOAD => LOAD,
+          UP => UP,
+          DOWN => DOWN,
+          CO => CO,
+          BO => BO,
+          o0 => o0,
+          o1 => o1,
+          o2 => o2,
+          o3 => o3,
+          o4 => o4,
+          o5 => o5,
+          o6 => o6,
+          o7 => o7,
+          o8 => o8,
+          o9 => o9
+        );
+
+	   -- Stimulus process
+	   stim_proc: process
+	   begin       
+	      -- hold reset state for 5 ns.
+	      wait for 5 ns;   
+	       
+	        --reset
+	        CLR <= '1';
+	        wait for 5 ns;
+	        CLR <= '0';
+	        wait for 5 ns;
+	       
+	        --wpisanie 7
+	        ABCD <= "0111";
+	        wait for 10 ns;
+	       
+	        --zaladowanie 7
+	        LOAD <= '0';
+	        wait for 5 ns;
+	        LOAD <= '1';
+	        wait for 5 ns;
+	        LOAD <= '0';
+			  wait for 5 ns;
+			  LOAD <= '1';
+	        --wpisanie 0
+	        ABCD <= "0000";
+	       
+	        --zliczanie w gore
+	        DOWN <='1';
+	        UP <= '0';
+	        wait for 5 ns;
+	        UP <= '1';
+	        wait for 5 ns;
+	       
+	        UP <= '0';
+	        wait for 5 ns;
+	        UP <= '1';
+	        wait for 5 ns;
+	       
+	        UP <= '0';
+	        wait for 5 ns;
+	        UP <= '1';
+	        wait for 5 ns;
+	       
+	        UP <= '0';
+	        wait for 5 ns;
+	        UP <= '1';
+	        wait for 5 ns;
+	 
+	        UP <= '0';
+	        wait for 5 ns;
+	        UP <= '1';
+	        wait for 5 ns;
+	       
+	        --zliczanie w dol
+	        DOWN <= '0';
+	        wait for 5 ns;
+	        DOWN <= '1';
+	        wait for 5 ns;
+	       
+	        DOWN <= '0';
+	        wait for 5 ns;
+	        DOWN <= '1';
+	        wait for 5 ns;
+	       
+	        DOWN <= '0';
+	        wait for 5 ns;
+	        DOWN <= '1';
+	        wait for 5 ns;
+	       
+	        DOWN <= '0';
+	        wait for 5 ns;
+	        DOWN <= '1';
+	        wait for 5 ns;
+	 
+	        DOWN <= '0';
+	        wait for 5 ns;
+	        DOWN <= '1';
+	        wait for 5 ns;
+	       
+	    wait;
+	   end process;
+	 
+END;
