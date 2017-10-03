@@ -1,2 +1,2 @@
-# BCD_1_to_10- with counter 74192
-Project for Design Electrical Systems in VHDL language
+# BCD 1 to 10 with counter 74192 and test bench
+Project for Design Electrical Systems in VHDL language in ISE
